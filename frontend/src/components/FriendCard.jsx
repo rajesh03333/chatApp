@@ -15,9 +15,6 @@ export default function FriendCard({ friend, onSelect }) {
     >
       <h3 style={{ marginBottom: "6px" }}>{friend.name}</h3>
 
-      {/* <p style={{ fontSize: "12px", color: "#666" }}>
-        {friend.publicKey?.slice(0, 30)}...
-      </p> */}
     </div>
   );
 }
