@@ -31,17 +31,24 @@ useEffect(() => {
 
   chat.map().on(async (msg, id) => {
     if (!msg?.ciphertext) return;
+    console.log("Entered");
+    console.log("Not same");
 
     try {
       const privateECDH = localStorage.getItem("privateECDH");
       const privateSign = localStorage.getItem("privateSign");
-      const publicSign = localStorage.getItem("publicSign");
-      const publicECDH = localStorage.getItem("publicECDH");
+      // const publicSign = localStorage.getItem("publicSign");
+      // const publicECDH = localStorage.getItem("publicECDH");
 
       if (!privateECDH || !privateSign) return;
 
+      if (!msg.senderPublicECDH || !msg.senderPublicSign) return;
+
+
       // 1️⃣ Verify signature
       const verifyStart = performance.now();
+
+
       const valid = await verifySignature(
         msg.ciphertext,
         msg.signature,
@@ -49,10 +56,16 @@ useEffect(() => {
       );
       const verifyEnd = performance.now();
 
-      if (!valid) return;
+      if (!valid) 
+        {
+          console.log("Not Valid");
+          return;
+        }
+
+      console.log("Verified");
 
       // 2️⃣ Derive shared key
-      console.log("mdg.senderPublicECDH",msg.senderPublicECDH);
+      console.log("msg.senderPublicECDH",msg.senderPublicECDH);
       const keyStart = performance.now();
       const sharedKey = await deriveSharedSecret(
         privateECDH,
@@ -70,6 +83,9 @@ useEffect(() => {
       const decryptEnd = performance.now();
 
       const e2eLatency = Date.now() - msg.createdAt;
+
+      console.log(msg.ciphertext);
+      console.log(plaintext);
 
       console.log("📊 LATENCY");
       console.log("E2E:", e2eLatency, "ms");
@@ -100,6 +116,7 @@ useEffect(() => {
 
 
   const sendMessage = async () => {
+    try {
     console.log("Send Message clicked");
   if (!input.trim()) return;
 
@@ -112,7 +129,7 @@ useEffect(() => {
   const publicECDH=friend.publicECDH;
   const publicSign=friend.publicSign;
 
-   console.log(publicECDH);
+   console.log("publicECDH",publicECDH);
 
   if (!privateECDH || !privateSign || !publicECDH || !publicSign) return;
 
@@ -122,10 +139,27 @@ useEffect(() => {
   console.log("privateECDH",privateECDH);
   console.log("privateSign",privateSign);
   console.log("friendECDH",publicECDH);
-  const sharedKey = await deriveSharedSecret(
+  console.log("userECDH",user.publicECDH);
+
+  if (!friend?.publicECDH || !friend?.publicSign) return;
+
+  const sharedKeyCache = new Map();
+
+const cacheKey = publicECDH; // receive
+// or friend.publicECDH for send
+
+let sharedKey = sharedKeyCache.get(cacheKey);
+
+if (!sharedKey) {
+  sharedKey = await deriveSharedSecret(
     privateECDH,
-    publicECDH
+    cacheKey
   );
+  sharedKeyCache.set(cacheKey, sharedKey);
+}
+
+  console.log("SharedKey",sharedKey);
+  
   const t1 = performance.now();
 
   // 2️⃣ Encrypt
@@ -154,6 +188,8 @@ useEffect(() => {
     }
   });
 
+  console.log("totalMs",t3-t0);
+
 
   setInput("");
 
@@ -169,7 +205,10 @@ useEffect(() => {
     } catch (err) {
       console.log("Failed to auto-add friend:", err);
     }
-  };
+   } catch (err) {
+    console.error("Send failed:", err);
+  }
+};
 
   if (!user || !friend) {
     return <h2 style={{ padding: 20 }}>Loading chat...</h2>;

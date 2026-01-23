@@ -10,5 +10,10 @@ server.listen(port, () => {
   console.log("GUN peer running on http://localhost:" + port + "/gun");
 });
 
+Gun.on("put", data => {
+  console.log("📦 GUN PUT:", JSON.stringify(data, null, 2));
+});
 
-Gun({ web: server });
+
+
+Gun({ web: server,file: "radata" });

@@ -1,15 +1,16 @@
 // ================== helpers ==================
 export function base64ToBytes(base64) {
-  if (!base64) throw new Error("base64ToBytes received undefined");
+  if (!base64) throw new Error("Missing base64 input");
 
-  // Remove PEM headers if present
-  const cleaned = base64
-    .replace(/-----BEGIN [^-]+-----/g, "")
-    .replace(/-----END [^-]+-----/g, "")
+  // remove PEM headers if present
+  base64 = base64
+    .replace(/-----BEGIN.*-----/g, "")
+    .replace(/-----END.*-----/g, "")
     .replace(/\s+/g, "");
 
-  return Uint8Array.from(atob(cleaned), c => c.charCodeAt(0));
+  return Uint8Array.from(atob(base64), c => c.charCodeAt(0));
 }
+
 
 
 export function bytesToBase64(bytes) {
@@ -51,6 +52,9 @@ export async function deriveSharedSecret(
   myPrivateECDHBase64,
   theirPublicECDHBase64
 ) {
+  console.log("At derivedSharedSecret my privateECDH",myPrivateECDHBase64);
+  console.log("At derivedSharedSecret their publicECDH",theirPublicECDHBase64);
+
   const privateKey = await crypto.subtle.importKey(
     "pkcs8",
     base64ToBytes(myPrivateECDHBase64),
@@ -92,7 +96,11 @@ export async function encryptMessage(text, aesKey) {
   };
 }
 
+
 export async function decryptMessage(cipher, iv, aesKey) {
+  console.log("Cipher:",cipher);
+  console.log("Iv:",iv);
+  console.log("aes:",aesKey);
   const decrypted = await crypto.subtle.decrypt(
     { name: "AES-GCM", iv: base64ToBytes(iv) },
     aesKey,

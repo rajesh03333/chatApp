@@ -51,27 +51,26 @@ const AuthForm = () => {
     // console.log(privateKey);
     // console.log(publicKey);
 
-    localStorage.setItem("privateKey", privateKey);
-    localStorage.setItem("publicKey", publicKey);
+    let privateECDH = localStorage.getItem("privateECDH");
+ publicECDH  = localStorage.getItem("publicECDH");
+let privateSign = localStorage.getItem("privateSign");
+ publicSign  = localStorage.getItem("publicSign");
 
-    const { ecdhKeyPair, signKeyPair } = await generateKeys();
+if (isSignup && (!privateECDH || !publicECDH || !privateSign || !publicSign)) {
+  const { ecdhKeyPair, signKeyPair } = await generateKeys();
 
-  const privateECDH = await exportPrivateKey(ecdhKeyPair.privateKey);
-   publicECDH = await exportPublicKey(ecdhKeyPair.publicKey);
+  privateECDH = await exportPrivateKey(ecdhKeyPair.privateKey);
+  publicECDH  = await exportPublicKey(ecdhKeyPair.publicKey);
+  privateSign = await exportPrivateKey(signKeyPair.privateKey);
+  publicSign  = await exportPublicKey(signKeyPair.publicKey);
 
-  const privateSign = await exportPrivateKey(signKeyPair.privateKey);
-   publicSign = await exportPublicKey(signKeyPair.publicKey);
-
-  // store PRIVATE keys locally
   localStorage.setItem("privateECDH", privateECDH);
-  localStorage.setItem("privateSign", privateSign);
   localStorage.setItem("publicECDH", publicECDH);
+  localStorage.setItem("privateSign", privateSign);
   localStorage.setItem("publicSign", publicSign);
-
-  console.log("publicECDH",publicECDH);
-  console.log("publicSign",publicSign);
-
+}
   }
+
 
   const body = isSignup
     ? {
