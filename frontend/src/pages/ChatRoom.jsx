@@ -9,6 +9,12 @@ const gun = Gun({
 });
 
 
+const STATUS = {
+  SENT: "sent",
+  DELIVERED: "delivered",
+  SEEN: "seen",
+};
+
 
 export default function ChatRoom() {
   const { id: friendId } = useParams();
@@ -18,6 +24,9 @@ export default function ChatRoom() {
   const friend = state?.friend;
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+
+
+  const [messageStatus, setMessageStatus] = useState({});
 
   const scrollRef = useRef();
 
@@ -37,17 +46,13 @@ useEffect(() => {
     try {
       const privateECDH = localStorage.getItem("privateECDH");
       const privateSign = localStorage.getItem("privateSign");
-      // const publicSign = localStorage.getItem("publicSign");
-      // const publicECDH = localStorage.getItem("publicECDH");
+
+      
 
       if (!privateECDH || !privateSign) return;
-
       if (!msg.senderPublicECDH || !msg.senderPublicSign) return;
 
-
-      // 1️⃣ Verify signature
       const verifyStart = performance.now();
-
 
       const valid = await verifySignature(
         msg.ciphertext,
@@ -56,16 +61,21 @@ useEffect(() => {
       );
       const verifyEnd = performance.now();
 
-      if (!valid) 
-        {
-          console.log("Not Valid");
-          return;
-        }
+      if (!valid) {
+        console.log("Not Valid");
+        return;
+      }
 
       console.log("Verified");
 
-      // 2️⃣ Derive shared key
-      console.log("msg.senderPublicECDH",msg.senderPublicECDH);
+      
+      if (msg.senderId !== user._id && msg.status === STATUS.SENT) {
+        gun.get(roomKey).get(id).put({
+          status: STATUS.DELIVERED
+        });
+      }
+      
+
       const keyStart = performance.now();
       const sharedKey = await deriveSharedSecret(
         privateECDH,
@@ -73,7 +83,6 @@ useEffect(() => {
       );
       const keyEnd = performance.now();
 
-      // 3️⃣ Decrypt
       const decryptStart = performance.now();
       const plaintext = await decryptMessage(
         msg.ciphertext,
@@ -104,14 +113,38 @@ useEffect(() => {
         }];
       });
 
+     
+      if (msg.status) {
+        setMessageStatus(prev => ({
+          ...prev,
+          [id]: msg.status
+        }));
+      }
+      
+
     } catch (err) {
       console.error("Decrypt failed:", err);
     }
   });
 
   return () => gun.get(roomKey).off();
-}, [roomKey]);
+}, [roomKey, user?._id]);
 
+
+useEffect(() => {
+  if (!messages.length) return;
+
+  const lastMsg = messages[messages.length - 1];
+
+  if (
+    lastMsg.senderId !== user._id &&
+    messageStatus[lastMsg._id] === STATUS.DELIVERED
+  ) {
+    gun.get(roomKey).get(lastMsg._id).put({
+      status: STATUS.SEEN
+    });
+  }
+}, [messages, messageStatus, roomKey, user?._id]);
 
 
 
@@ -125,7 +158,6 @@ useEffect(() => {
 
   console.log(friend);
 
-
   const publicECDH=friend.publicECDH;
   const publicSign=friend.publicSign;
 
@@ -135,7 +167,6 @@ useEffect(() => {
 
   const t0 = performance.now();
 
-  // 1️⃣ Shared key
   console.log("privateECDH",privateECDH);
   console.log("privateSign",privateSign);
   console.log("friendECDH",publicECDH);
@@ -145,8 +176,7 @@ useEffect(() => {
 
   const sharedKeyCache = new Map();
 
-const cacheKey = publicECDH; // receive
-// or friend.publicECDH for send
+const cacheKey = publicECDH;
 
 let sharedKey = sharedKeyCache.get(cacheKey);
 
@@ -162,15 +192,19 @@ if (!sharedKey) {
   
   const t1 = performance.now();
 
-  // 2️⃣ Encrypt
   const { cipher, iv } = await encryptMessage(input, sharedKey);
   const t2 = performance.now();
 
-  // 3️⃣ Sign
   const signature = await signMessage(cipher, privateSign);
   const t3 = performance.now();
 
+  
+  const msgId = Gun.text.random(8);
+  
+
   gun.get(roomKey).set({
+    _id: msgId,
+
     senderId: user._id,
 
     senderPublicECDH: user.publicECDH,
@@ -181,6 +215,11 @@ if (!sharedKey) {
     signature,
 
     createdAt: Date.now(),
+
+    
+    status: STATUS.SENT,
+    
+
     perf: {
       encryptMs: t2 - t1,
       signMs: t3 - t2,
@@ -190,6 +229,11 @@ if (!sharedKey) {
 
   console.log("totalMs",t3-t0);
 
+  setMessageStatus(prev => ({
+    ...prev,
+    [msgId]: STATUS.SENT
+  }));
+  
 
   setInput("");
 
@@ -257,6 +301,18 @@ if (!sharedKey) {
               >
                 <strong>{m.senderId === user._id ? "You" : m.sender}</strong>
                 <p style={{ marginTop: 4 }}>{m.text}</p>
+
+                {m.senderId === user._id && (
+                  <div style={{ fontSize: 12, marginTop: 4 }}>
+                    {messageStatus[m._id] === STATUS.SENT && "✓"}
+                    {messageStatus[m._id] === STATUS.DELIVERED && "✓✓"}
+                    {messageStatus[m._id] === STATUS.SEEN && (
+                      <span style={{ color: "#4fc3f7" }}>seen</span>
+                    )}
+                  </div>
+                )}
+                
+
               </div>
             </div>
           ))}
