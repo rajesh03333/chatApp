@@ -2,19 +2,12 @@ export default function FriendCard({ friend, onSelect }) {
   if (!friend) return null;
 
   return (
-    <div
+    <button
       onClick={() => onSelect(friend)}
-      style={{
-        padding: "12px",
-        marginBottom: "10px",
-        border: "1px solid #ccc",
-        borderRadius: "8px",
-        background: "#f8f8f8",
-        cursor: "pointer",
-      }}
+      className="w-full rounded-3xl border border-slate-200 bg-white px-5 py-4 text-left shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50"
     >
-      <h3 style={{ marginBottom: "6px" }}>{friend.name}</h3>
-
-    </div>
+      <h3 className="text-lg font-semibold text-slate-900">{friend.name}</h3>
+      <p className="mt-1 text-sm text-slate-500">Tap to open a secure chat</p>
+    </button>
   );
 }

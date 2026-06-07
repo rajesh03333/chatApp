@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import bgImage from "./bg.jpg"; 
 import { useNavigate } from "react-router-dom";
@@ -16,7 +16,7 @@ import {
 const AuthForm = () => {
 
   const navigate = useNavigate();
-  const { saveUser } = useContext(ChatContext);  
+  const { user, saveUser } = useContext(ChatContext);  
 
   const [isSignup, setIsSignup] = useState(false);
   const [formData, setFormData] = useState({
@@ -26,6 +26,12 @@ const AuthForm = () => {
   });
   const [responseMessage, setResponseMessage] = useState(null);
   const [isError, setIsError] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -97,7 +103,7 @@ if (isSignup && (!privateECDH || !publicECDH || !privateSign || !publicSign)) {
     console.log("AUTH RESPONSE USER =", response.data.user);
 
     saveUser(response.data.user);
-    navigate("/dashboard");
+    navigate("/dashboard", { replace: true });
 
   } catch (error) {
     setIsError(true);
@@ -107,13 +113,18 @@ if (isSignup && (!privateECDH || !publicECDH || !privateSign || !publicSign)) {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-cover bg-center"
-      style={{ backgroundImage: `url(${bgImage})` }}
+      className="min-h-screen flex items-center justify-center bg-slate-950/95 p-4"
+      style={{ backgroundImage: `url(${bgImage})`, backgroundSize: "cover", backgroundPosition: "center" }}
     >
-      <div className="p-8 rounded-xl shadow-lg w-full max-w-md bg-white/5 border border-white/20 backdrop-blur-lg">
-        <h2 className="text-2xl font-bold text-center mb-6 text-white">
-          {isSignup ? "Sign Up" : "Log In"} to SmartStudy
+      <div className="w-full max-w-md rounded-[32px] border border-white/20 bg-white/10 p-8 shadow-2xl shadow-slate-950/30 backdrop-blur-xl">
+        <h2 className="text-3xl font-semibold text-center text-white sm:text-4xl">
+          {isSignup ? "Sign Up" : "Log In"}
         </h2>
+        <p className="mt-3 text-center text-sm text-slate-200">
+          {isSignup
+            ? "Create your secure chat account and start messaging."
+            : "Enter your credentials to continue."}
+        </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {isSignup && (
@@ -124,7 +135,7 @@ if (isSignup && (!privateECDH || !publicECDH || !privateSign || !publicSign)) {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full border p-2 rounded bg-white/10 text-white placeholder-gray-300"
+                className="w-full rounded-3xl border border-slate-200 bg-white/10 px-4 py-3 text-white placeholder-slate-300 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
               />
             </div>
           )}
@@ -136,7 +147,7 @@ if (isSignup && (!privateECDH || !publicECDH || !privateSign || !publicSign)) {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full border p-2 rounded bg-white/10 text-white placeholder-gray-300"
+              className="w-full rounded-3xl border border-slate-200 bg-white/10 px-4 py-3 text-white placeholder-slate-300 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
             />
           </div>
 
@@ -149,7 +160,7 @@ if (isSignup && (!privateECDH || !publicECDH || !privateSign || !publicSign)) {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className="w-full border p-2 rounded bg-white/10 text-white placeholder-gray-300"
+              className="w-full rounded-3xl border border-slate-200 bg-white/10 px-4 py-3 text-white placeholder-slate-300 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
             />
           </div>
 

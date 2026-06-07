@@ -21,14 +21,26 @@ export default function ChatProvider({ children }) {
     localStorage.setItem("name", userData.name);
     localStorage.setItem("email", userData.email);
     localStorage.setItem("publicKey", userData.publicKey);
-    localStorage.setItem("publicECDH",userData.publicECDH);
-    localStorage.setItem("publicSign",userData.publicSign);
+    localStorage.setItem("publicECDH", userData.publicECDH);
+    localStorage.setItem("publicSign", userData.publicSign);
 
     setUser(userData);
 
     if (userData._id) {
       loadFriends(userData._id);
     }
+  };
+
+  const logout = () => {
+    localStorage.removeItem("id");
+    localStorage.removeItem("name");
+    localStorage.removeItem("email");
+    localStorage.removeItem("publicKey");
+    localStorage.removeItem("publicECDH");
+    localStorage.removeItem("publicSign");
+
+    setUser(null);
+    setFriends([]);
   };
 
   useEffect(() => {
@@ -57,7 +69,8 @@ export default function ChatProvider({ children }) {
       setUser,
       friends,
       loadFriends,
-      saveUser
+      saveUser,
+      logout
     }}>
       {children}
     </ChatContext.Provider>
