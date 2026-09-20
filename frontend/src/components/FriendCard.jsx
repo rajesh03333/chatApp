@@ -1,13 +1,19 @@
 export default function FriendCard({ friend, onSelect }) {
   if (!friend) return null;
 
+  const initials = friend.name?.slice(0, 1).toUpperCase() || "?";
+
   return (
     <button
       onClick={() => onSelect(friend)}
-      className="w-full rounded-3xl border border-slate-200 bg-white px-5 py-4 text-left shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50"
+      className="friend-row"
     >
-      <h3 className="text-lg font-semibold text-slate-900">{friend.name}</h3>
-      <p className="mt-1 text-sm text-slate-500">Tap to open a secure chat</p>
+      <span className="avatar" aria-hidden="true">{initials}</span>
+      <span className="friend-copy">
+        <span className="friend-name">{friend.name}</span>
+        <span className="friend-meta"><span className="status-dot" aria-hidden="true" /> Available for a secure chat</span>
+      </span>
+      <span className="muted" aria-hidden="true">→</span>
     </button>
   );
 }

@@ -26,9 +26,6 @@ export default function ChatRoom() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
 
-  const capitalize = (text) =>
-    text ? text.charAt(0).toUpperCase() + text.slice(1).toLowerCase() : "";
-
   const [messageStatus, setMessageStatus] = useState({});
   const sharedKeyCache = useRef(new Map());
   const scrollRef = useRef();
@@ -316,11 +313,7 @@ useEffect(() => {
 
   if (!user || !friend) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6 text-slate-700">
-        <div className="rounded-3xl bg-white p-8 shadow-lg shadow-slate-200/80 text-center">
-          <h2 className="text-xl font-semibold">Loading chat…</h2>
-          <p className="mt-2 text-sm text-slate-500">Please wait while we prepare your secure conversation.</p>
-        </div>
+      <div className="app-shell"><div className="empty-state"><strong>Preparing your conversation</strong>Please wait while we load your secure chat.</div>
       </div>
     );
   }
@@ -331,98 +324,61 @@ useEffect(() => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-4 sm:px-6 lg:px-10">
-      <div className="mx-auto flex max-w-6xl flex-col gap-4">
-        <div className="rounded-3xl bg-white p-4 shadow-sm shadow-slate-200/80 sm:p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Secure Chat Room</p>
-              <h2 className="mt-2 text-3xl font-semibold text-slate-900">Chat with {friend.name}</h2>
-              <p className="mt-2 text-sm text-slate-600">Encryption, delivery receipts, and responsive layout.</p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <button
-                onClick={() => navigate("/dashboard")}
-                className="rounded-full border border-slate-300 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
-              >
-                Back to dashboard
-              </button>
-              <button
-                onClick={handleLogout}
-                className="rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
+    <div className="app-shell chat-app-shell">
+      <div className="page-wrap">
+        <header className="topbar">
+          <button onClick={() => navigate("/dashboard")} className="btn btn-quiet" aria-label="Back to dashboard">← Back</button>
+          <button onClick={handleLogout} className="btn btn-quiet">Log out</button>
+        </header>
 
-        <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
-          <div className="flex min-h-[520px] flex-col rounded-3xl bg-white p-4 shadow-sm shadow-slate-200/70 sm:p-6">
-            <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+        <main className="chat-layout">
+          <section className="surface chat-panel">
+            <header className="chat-header">
+              <div className="chat-person"><span className="avatar" aria-hidden="true">{friend.name?.slice(0, 1).toUpperCase()}</span><div><h1>{friend.name}</h1><p>End-to-end encrypted</p></div></div>
+              <button onClick={() => navigate("/dashboard")} className="btn btn-secondary">All chats</button>
+            </header>
+            <div className="message-scroll">
+              <div className="message-list">
               {messages
                 .sort((a, b) => a.createdAt - b.createdAt)
                 .map((m) => (
-                  <div
-                    key={m._id}
-                    className={`flex ${m.senderId === user._id ? "justify-end" : "justify-start"}`}
-                  >
-                    <div className={`max-w-[85%] rounded-3xl p-4 shadow-sm ${m.senderId === user._id ? "bg-emerald-100 text-slate-900" : "bg-slate-100 text-slate-900"}`}>
-                      <div className="flex items-center justify-between gap-3 text-xs text-slate-500">
-                        <span>{m.senderId === user._id ? "You" : friend.name}</span>
-                        <span>{new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-                      </div>
-                      <p className="mt-2 break-words text-sm leading-6">{m.text}</p>
+                  <div key={m._id} className={`message-line ${m.senderId === user._id ? "own" : ""}`}>
+                    <div className="message-bubble">
+                      <p className="message-text">{m.text}</p>
+                      <div className="message-meta"><span>{new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
                       {m.senderId === user._id && (
-                        <div className="mt-3 text-right text-xs text-slate-500">
-                          {messageStatus[m._id] === STATUS.SENT && "✓ Sent"}
-                          {messageStatus[m._id] === STATUS.DELIVERED && "✓✓ Delivered"}
-                          {messageStatus[m._id] === STATUS.SEEN && "✓✓ Seen"}
-                        </div>
+                        <span aria-label={`Message ${messageStatus[m._id] || STATUS.SENT}`}>{messageStatus[m._id] === STATUS.SENT && "✓"}{messageStatus[m._id] === STATUS.DELIVERED && "✓✓"}{messageStatus[m._id] === STATUS.SEEN && "✓✓"}</span>
                       )}
+                      </div>
                     </div>
                   </div>
                 ))}
               <div ref={scrollRef} />
+              {!messages.length && <div className="empty-state"><strong>Start the conversation</strong>Say hello to {friend.name}.</div>}
+              </div>
             </div>
 
-            <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+            <form className="composer" onSubmit={(event) => { event.preventDefault(); sendMessage(); }}>
               <input
+                aria-label="Message"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                placeholder="Type a secure message..."
-                className="flex-1 rounded-3xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+                placeholder="Write a message"
+                className="input"
               />
-              <button
-                onClick={sendMessage}
-                className="rounded-3xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 sm:w-auto"
-              >
+              <button type="submit" disabled={!input.trim()} className="btn btn-primary">
                 Send
               </button>
-            </div>
-          </div>
+            </form>
+          </section>
 
-          <aside className="rounded-3xl bg-white p-6 shadow-sm shadow-slate-200/70">
-            <h3 className="text-lg font-semibold text-slate-900">Chat details</h3>
-            <div className="mt-4 space-y-4 text-sm text-slate-600">
-              <div>
-                <p className="font-semibold text-slate-800">Friend</p>
-                <p>{friend.name}</p>
-              </div>
-              <div>
-                <p className="font-semibold text-slate-800">Status</p>
-                <p className="text-emerald-600">Connected</p>
-              </div>
-              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
-                <p className="font-semibold text-slate-800">Tips</p>
-                <p className="mt-2 leading-6 text-slate-600">
-                  Your messages are encrypted before they leave your browser. Delivery receipts update in real time.
-                </p>
-              </div>
-            </div>
+          <aside className="surface chat-aside">
+            <p className="eyebrow">Conversation</p>
+            <h2 className="section-title">Chat details</h2>
+            <div className="detail"><p className="detail-label">Contact</p><p className="detail-value">{friend.name}</p></div>
+            <div className="detail"><p className="detail-label">Privacy</p><p className="detail-value">Encrypted before sending</p></div>
           </aside>
-        </div>
+        </main>
       </div>
     </div>
   );

@@ -1,6 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
 import axios from "axios";
-import bgImage from "./bg.jpg"; 
 import { useNavigate } from "react-router-dom";
 import { ChatContext } from "../contexts/chatContext";
 import nacl from "tweetnacl";
@@ -52,10 +51,6 @@ const AuthForm = () => {
     const keyPair = nacl.sign.keyPair();
 
     publicKey = encodeBase64(keyPair.publicKey);
-    const privateKey = encodeBase64(keyPair.secretKey);
-
-    // console.log(privateKey);
-    // console.log(publicKey);
 
     let privateECDH = localStorage.getItem("privateECDH");
  publicECDH  = localStorage.getItem("publicECDH");
@@ -112,95 +107,38 @@ if (isSignup && (!privateECDH || !publicECDH || !privateSign || !publicSign)) {
 };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center bg-slate-950/95 p-4"
-      style={{ backgroundImage: `url(${bgImage})`, backgroundSize: "cover", backgroundPosition: "center" }}
-    >
-      <div className="w-full max-w-md rounded-[32px] border border-white/20 bg-white/10 p-8 shadow-2xl shadow-slate-950/30 backdrop-blur-xl">
-        <h2 className="text-3xl font-semibold text-center text-white sm:text-4xl">
-          {isSignup ? "Sign Up" : "Log In"}
-        </h2>
-        <p className="mt-3 text-center text-sm text-slate-200">
-          {isSignup
-            ? "Create your secure chat account and start messaging."
-            : "Enter your credentials to continue."}
-        </p>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {isSignup && (
-            <div>
-              <label className="block font-semibold mb-1 text-white">Name</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="w-full rounded-3xl border border-slate-200 bg-white/10 px-4 py-3 text-white placeholder-slate-300 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
-              />
-            </div>
-          )}
-
+    <main className="auth-page">
+      <div className="auth-layout">
+        <section className="auth-intro">
           <div>
-            <label className="block font-semibold mb-1 text-white">Email</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full rounded-3xl border border-slate-200 bg-white/10 px-4 py-3 text-white placeholder-slate-300 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
-            />
+            <h1>Conversations that stay yours.</h1>
+            <p>Private, direct messaging for the people you actually want to hear from.</p>
           </div>
+          <p className="small-copy" style={{ color: "#91aaa1", margin: 0 }}>End-to-end encrypted by design.</p>
+        </section>
 
-          <div>
-            <label className="block font-semibold mb-1 text-white">
-              Password
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full rounded-3xl border border-slate-200 bg-white/10 px-4 py-3 text-white placeholder-slate-300 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
-            />
-          </div>
+        <section className="auth-form-panel">
+          <p className="eyebrow">Private messaging</p>
+          <h2>{isSignup ? "Create your account" : "Welcome back"}</h2>
+          <p className="small-copy">{isSignup ? "Start a private conversation in a few seconds." : "Sign in to pick up where you left off."}</p>
 
-          <button
-            type="submit"
-            className="w-full bg-purple-600 text-white py-2 rounded font-semibold hover:bg-purple-700"
-          >
-            {isSignup ? "Sign Up" : "Log In"}
-          </button>
-        </form>
+          <form onSubmit={handleSubmit} className="auth-form">
+            {isSignup && <div className="field"><label htmlFor="name">Name</label><input id="name" className="input" type="text" name="name" value={formData.name} onChange={handleChange} autoComplete="name" required /></div>}
+            <div className="field"><label htmlFor="email">Email address</label><input id="email" className="input" type="email" name="email" value={formData.email} onChange={handleChange} autoComplete="email" required /></div>
+            <div className="field"><label htmlFor="password">Password</label><input id="password" className="input" type="password" name="password" value={formData.password} onChange={handleChange} autoComplete={isSignup ? "new-password" : "current-password"} required /></div>
+            <button type="submit" className="btn btn-primary">{isSignup ? "Create account" : "Sign in"}</button>
+          </form>
 
-        <p className="text-sm text-center mt-4 text-white">
-          {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
-          <button
-            onClick={() => {
-              setIsSignup(!isSignup);
-              setResponseMessage(null);
-            }}
-            className="text-blue-400 hover:underline"
-          >
-            {isSignup ? "Log In" : "Sign Up"}
-          </button>
-        </p>
-
-        {responseMessage && (
-          <div
-            className={`mt-6 p-4 text-sm rounded break-words ${
-              isError
-                ? "bg-red-100 text-red-800"
-                : "bg-green-100 text-green-800"
-            }`}
-          >
-            <strong>{isError ? "Error" : "Success"}:</strong>
-            <pre className="whitespace-pre-wrap break-all mt-1">
-              {responseMessage}
-            </pre>
-          </div>
-        )}
+          <p className="small-copy" style={{ marginTop: 22 }}>
+            {isSignup ? "Already have an account?" : "New here?"}{" "}
+            <button type="button" className="btn btn-quiet" style={{ minHeight: "auto", padding: 0, color: "var(--mint-700)" }} onClick={() => { setIsSignup(!isSignup); setResponseMessage(null); }}>
+              {isSignup ? "Sign in" : "Create an account"}
+            </button>
+          </p>
+          {responseMessage && <div className={`auth-message ${isError ? "error" : "success"}`}><strong>{isError ? "Could not continue" : "Success"}</strong><div>{responseMessage}</div></div>}
+        </section>
       </div>
-    </div>
+    </main>
   );
 };
 
