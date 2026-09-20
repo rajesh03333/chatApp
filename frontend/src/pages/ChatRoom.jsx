@@ -5,7 +5,10 @@ import { deriveSharedSecret, encryptMessage, decryptMessage, signMessage, verify
 import { ChatContext } from "../contexts/chatContext";
 
 const gun = Gun({
-  peers: ["http://localhost:8765/gun"]
+  peers: [
+    import.meta.env.VITE_GUN_SERVER_1_URL || "http://localhost:8765/gun",
+    import.meta.env.VITE_GUN_SERVER_2_URL || "http://localhost:8766/gun",
+  ]
 });
 
 

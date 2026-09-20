@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "gun1": "node gunServer.js",
+    "gun2": "node gunServer2.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
