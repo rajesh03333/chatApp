@@ -13,7 +13,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-  env:
+    env:
       JWT_SECRET: RajeshSecretKey
 
     services:
