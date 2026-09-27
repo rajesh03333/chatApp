@@ -13,8 +13,6 @@ import {
 const app = require("../../app");
 const User = require("../../models/User1");
 
-let mongoServer;
-
 beforeAll(async () => {
     await mongoose.connect("mongodb://127.0.0.1:27017/chatapp_test");
 },60000);
@@ -60,7 +58,6 @@ describe("Auth Integration Tests", () => {
             expect(user).not.toBeNull();
             expect(user.name).toBe("Rajesh");
 
-            // Password should not be stored as plain text
             expect(user.password).not.toBe("password123");
         });
 

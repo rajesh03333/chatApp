@@ -13,7 +13,7 @@ module.exports = (req, res, next) => {
 
     req.user = decoded; // attach user id + name to request
     next();
-  } catch (err) {
+  } catch {
     return res.status(401).json({ msg: "Invalid or expired token" });
   }
 };

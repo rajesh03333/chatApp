@@ -12,7 +12,7 @@ router.get("/search", async (req, res) => {
     }).select("name publicKey publicECDH publicSign");
 
     res.json(users);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: "Search failed" });
   }
 });
@@ -43,7 +43,7 @@ router.post("/auto-add", async (req, res) => {
     }
 
     res.json({ success: true, alreadyFriends });
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: "Friend add failed" });
   }
 });
@@ -61,7 +61,7 @@ router.get("/:userId", async (req, res) => {
     console.log(user.friends);
 
     return res.status(200).json(user.friends || []);
-  } catch (err) {
+  } catch {
     return res.status(200).json([]); 
   }
 });
