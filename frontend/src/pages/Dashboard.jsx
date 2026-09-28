@@ -1,7 +1,7 @@
 import { useContext, useState , useEffect} from "react";
 import FriendCard from "../components/FriendCard";
 import { useNavigate } from "react-router-dom";
-import { ChatContext } from "../contexts/chatContext";
+import { ChatContext } from "../contexts/ChatContext";
 
 export default function Dashboard() {
   const { user, friends, loadFriends, logout } = useContext(ChatContext);
