@@ -2,7 +2,7 @@ import { useEffect, useState, useContext, useRef } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import Gun from "gun";
 import { deriveSharedSecret, encryptMessage, decryptMessage, signMessage, verifySignature } from "../utils/cryptoUtils";
-import { ChatContext } from "../contexts/chatContext";
+import { ChatContext } from "../contexts/ChatContext";
 
 const gun = Gun({
   peers: [

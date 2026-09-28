@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { ChatContext } from "../contexts/chatContext";
+import { ChatContext } from "../contexts/ChatContext";
 
 export default function FriendList() {
   const { user, loadFriends } = useContext(ChatContext);

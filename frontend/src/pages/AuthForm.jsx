@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { ChatContext } from "../contexts/chatContext";
+import { ChatContext } from "../contexts/ChatContext";
 import nacl from "tweetnacl";
 import { encodeBase64 } from "tweetnacl-util";
 import {

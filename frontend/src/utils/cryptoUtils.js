@@ -1,8 +1,7 @@
-// ================== helpers ==================
 export function base64ToBytes(base64) {
   if (!base64) throw new Error("Missing base64 input");
 
-  // remove PEM headers if present
+
   base64 = base64
     .replace(/-----BEGIN.*-----/g, "")
     .replace(/-----END.*-----/g, "")
@@ -17,7 +16,7 @@ export function bytesToBase64(bytes) {
   return btoa(String.fromCharCode(...bytes));
 }
 
-// ================== key generation ==================
+
 export async function generateKeys() {
   // Encryption key (ECDH)
   const ecdhKeyPair = await crypto.subtle.generateKey(
@@ -26,7 +25,7 @@ export async function generateKeys() {
     ["deriveKey"]
   );
 
-  // Signing key (Ed25519)
+
   const signKeyPair = await crypto.subtle.generateKey(
     { name: "Ed25519" },
     true,
@@ -36,7 +35,7 @@ export async function generateKeys() {
   return { ecdhKeyPair, signKeyPair };
 }
 
-// ================== export keys ==================
+
 export async function exportPrivateKey(key) {
   const raw = await crypto.subtle.exportKey("pkcs8", key);
   return bytesToBase64(new Uint8Array(raw));
@@ -47,7 +46,7 @@ export async function exportPublicKey(key) {
   return bytesToBase64(new Uint8Array(raw));
 }
 
-// ================== shared secret ==================
+
 export async function deriveSharedSecret(
   myPrivateECDHBase64,
   theirPublicECDHBase64
@@ -80,7 +79,6 @@ export async function deriveSharedSecret(
   );
 }
 
-// ================== encryption ==================
 export async function encryptMessage(text, aesKey) {
   const iv = crypto.getRandomValues(new Uint8Array(12));
 
@@ -110,7 +108,7 @@ export async function decryptMessage(cipher, iv, aesKey) {
   return new TextDecoder().decode(decrypted);
 }
 
-// ================== signing ==================
+
 export async function signMessage(message, privateSignKeyBase64) {
   const privateKey = await crypto.subtle.importKey(
     "pkcs8",
